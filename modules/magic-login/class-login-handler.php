@@ -187,6 +187,7 @@ class Aben_GW_Magic_Login_Handler {
     private function is_local_url($url) {
         $site_host = parse_url(home_url(), PHP_URL_HOST);
         $url_host = parse_url($url, PHP_URL_HOST);
+        $request_host = isset($_SERVER['HTTP_HOST']) ? sanitize_text_field(wp_unslash($_SERVER['HTTP_HOST'])) : '';
         
         // If no host in URL, it's relative (local)
         if (!$url_host) {
@@ -194,7 +195,7 @@ class Aben_GW_Magic_Login_Handler {
         }
         
         // Check if hosts match
-        return $site_host === $url_host;
+        return $site_host === $url_host || (!empty($request_host) && $request_host === $url_host);
     }
     
     /**
