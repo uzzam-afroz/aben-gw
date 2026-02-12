@@ -138,7 +138,7 @@ class Aben_GW_Magic_Login_Link_Processor {
         $params['agw_token'] = $token;
         
         // Add redirect URL (the actual destination)
-        $params['agw_redirect'] = urlencode($url);
+        $params['agw_redirect'] = $url;
         
         // Rebuild URL
         $new_url = $this->build_url($parsed, $params);

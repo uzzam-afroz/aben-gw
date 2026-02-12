@@ -38,8 +38,8 @@ class Aben_GW_Magic_Login_Handler {
         if (!$validation || !$validation['valid']) {
             $error = isset($validation['error']) ? $validation['error'] : 'invalid';
 
-            if ($error === 'expired') {
-                $this->log_login_attempt(0, 'failed', array('error' => 'expired'));
+            if ($error === 'expired' || $error === 'used') {
+                $this->log_login_attempt(0, 'failed', array('error' => $error));
 
                 $redirect_url = $this->get_redirect_url();
                 wp_safe_redirect($redirect_url);
@@ -106,12 +106,22 @@ class Aben_GW_Magic_Login_Handler {
         
         // Check for redirect parameter
         if (isset($_GET['agw_redirect'])) {
-            $redirect = urldecode(sanitize_text_field(wp_unslash($_GET['agw_redirect'])));
+            $redirect = $this->decode_url_param($_GET['agw_redirect']);
             
             // Remove magic login parameters from redirect URL
             $redirect = remove_query_arg(array('agw_token', 'agw_redirect'), $redirect);
             
             // Validate it's a local URL
+            if ($this->is_local_url($redirect)) {
+                return $redirect;
+            }
+        }
+
+        // If Aben tracking wraps links, use its "url" param as the destination
+        if (isset($_GET['url'])) {
+            $redirect = $this->decode_url_param($_GET['url']);
+            $redirect = remove_query_arg(array('agw_token', 'agw_redirect'), $redirect);
+
             if ($this->is_local_url($redirect)) {
                 return $redirect;
             }
@@ -145,6 +155,27 @@ class Aben_GW_Magic_Login_Handler {
         $url = remove_query_arg(array('agw_token', 'agw_redirect'), $url);
 
         return $url;
+    }
+
+    /**
+     * Decode URL params that may be double-encoded by upstream tracking.
+     *
+     * @param string $value Raw param value
+     * @return string Decoded URL value
+     */
+    private function decode_url_param($value) {
+        $decoded = sanitize_text_field(wp_unslash($value));
+
+        // Decode up to 2 times to handle nested encoding safely.
+        for ($i = 0; $i < 2; $i++) {
+            $next = urldecode($decoded);
+            if ($next === $decoded) {
+                break;
+            }
+            $decoded = $next;
+        }
+
+        return $decoded;
     }
     
     /**
