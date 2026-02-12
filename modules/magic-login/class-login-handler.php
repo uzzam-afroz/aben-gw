@@ -164,7 +164,7 @@ class Aben_GW_Magic_Login_Handler {
      * @return string Decoded URL value
      */
     private function decode_url_param($value) {
-        $decoded = sanitize_text_field(wp_unslash($value));
+        $decoded = wp_unslash($value);
 
         // Decode up to 2 times to handle nested encoding safely.
         for ($i = 0; $i < 2; $i++) {
@@ -175,7 +175,7 @@ class Aben_GW_Magic_Login_Handler {
             $decoded = $next;
         }
 
-        return $decoded;
+        return esc_url_raw($decoded);
     }
     
     /**
