@@ -118,9 +118,7 @@ class Aben_GW_Custom_Filters {
         }
         
         // Fallback to default GW logo
-        $default_logo = $this->get_default_logo();
-        
-        return $default_logo ? $default_logo : $image_url;
+        return $this->get_default_logo();
     }
     
     /**
@@ -135,6 +133,6 @@ class Aben_GW_Custom_Filters {
             return ABEN_GW_URL . 'assets/img/logo.png';
         }
         
-        return false;
+        return '';
     }
 }
