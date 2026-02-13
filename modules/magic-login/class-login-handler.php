@@ -27,7 +27,7 @@ class Aben_GW_Magic_Login_Handler {
         $token = sanitize_text_field(wp_unslash($_GET['agw_token']));
         
         if (empty($token)) {
-            $this->show_error(__('Invalid login link.', 'aben-gw'));
+            $this->handle_failed_token(__('Invalid login link.', 'aben-gw'), 'invalid');
             return;
         }
         
@@ -37,17 +37,8 @@ class Aben_GW_Magic_Login_Handler {
         
         if (!$validation || !$validation['valid']) {
             $error = isset($validation['error']) ? $validation['error'] : 'invalid';
-
-            if ($error === 'expired' || $error === 'used') {
-                $this->log_login_attempt(0, 'failed', array('error' => $error));
-
-                $redirect_url = $this->get_redirect_url();
-                wp_safe_redirect($redirect_url);
-                exit;
-            }
-
             $message = isset($validation['message']) ? $validation['message'] : __('Invalid login link.', 'aben-gw');
-            $this->show_error($message);
+            $this->handle_failed_token($message, $error);
             return;
         }
         
@@ -73,6 +64,23 @@ class Aben_GW_Magic_Login_Handler {
         do_action('aben_gw_magic_login_success', $user_id, $token_data);
         
         // Redirect
+        wp_safe_redirect($redirect_url);
+        exit;
+    }
+
+    /**
+     * Handle token validation failures by redirecting without logging in.
+     *
+     * @param string $message Error message.
+     * @param string $error Error code.
+     */
+    private function handle_failed_token($message, $error = 'invalid') {
+        $this->log_login_attempt(0, 'failed', array(
+            'error' => $error,
+            'message' => $message
+        ));
+
+        $redirect_url = $this->get_redirect_url();
         wp_safe_redirect($redirect_url);
         exit;
     }

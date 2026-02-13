@@ -65,8 +65,8 @@ class Aben_GW_Magic_Login {
         // Hook before email is sent to generate token
         add_filter('aben_before_email_sent_filter', array($this, 'generate_token_before_email'), 10, 1);
         
-        // Hook to modify email HTML and add tokens to links
-        add_filter('aben_email_template_html_filter', array($this, 'add_tokens_to_email_links'), 20, 3);
+        // Add magic params before tracking addons rewrite/sign links.
+        add_filter('aben_email_template_html_filter', array($this, 'add_tokens_to_email_links'), 10, 3);
         
         // Hook after email is sent for cleanup/logging
         add_action('aben_after_email_sent_action', array($this, 'log_token_generation'), 10, 2);
